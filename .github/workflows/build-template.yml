@@ -5,19 +5,13 @@ name: Reusable Node.js CI with Docker
 on:
   workflow_call:
     inputs:
-      docker-user:
-        description: 'Docker Hub Username'
-        required: true
-        type: string
-      docker-pass:
-        description: 'Docker Hub Password'
-        required: true
-        type: string
       docker-image-name:
         description: 'Docker Image Name'
         required: true
         type: string
-
+    secrets: 
+      docker-user: ${{secrets.DOCKER_USER}}
+      docker-pass: ${{secrets.DOCKER_PASS}}
 jobs:
   build:
     runs-on: ubuntu-latest
