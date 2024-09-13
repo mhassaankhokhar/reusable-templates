@@ -9,6 +9,15 @@ on:
         description: 'Docker Image Name'
         required: true
         type: string
+    secrets:
+      DOCKER_USER:
+        description: 'Docker Hub Username'
+        required: true
+        type: string
+      DOCKER_PASS:
+        description: 'Docker Hub Password'
+        required: true
+        type: string
 jobs:
   build:
     runs-on: ubuntu-latest
