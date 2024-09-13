@@ -16,6 +16,9 @@ on:
       DOCKER_PASS:
         description: 'Docker Hub Password'
         required: true
+      PAT:
+        description: 'GitHub Personal Access Token'
+        required: true
 jobs:
   build:
     runs-on: ubuntu-latest
