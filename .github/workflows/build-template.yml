@@ -5,7 +5,7 @@ name: Reusable Node.js CI with Docker
 on:
   workflow_call:
     inputs:
-      docker-image-name:
+      DOCKER_IMAGE:
         description: 'Docker Image Name'
         required: true
         type: string
