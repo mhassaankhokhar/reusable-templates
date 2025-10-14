@@ -1,39 +1,60 @@
-# .github/workflows/docker-nodejs-template.yml
-
-name: Reusable Node.js CI with Docker
+name: Reusable Docker Build
 
 on:
   workflow_call:
     inputs:
       DOCKER_IMAGE:
-        description: 'Docker Image Name'
         required: true
         type: string
+        description: 'Docker image name (e.g., username/image-name)'
     secrets:
       DOCKER_USER:
-        description: 'Docker Hub Username'
         required: true
       DOCKER_PASS:
-        description: 'Docker Hub Password'
         required: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@v3
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
-
-      - name: Build Docker image
-        uses: docker/build-push-action@v2
+      
+      # Extract metadata (tags, labels) for Docker
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ inputs.DOCKER_IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
         with:
           context: .
-          push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ inputs.DOCKER_IMAGE }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ inputs.DOCKER_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ inputs.DOCKER_IMAGE }}:buildcache,mode=max
+      
+      - name: Output image info
+        run: |
+          echo "Built and pushed images:"
+          echo "${{ steps.meta.outputs.tags }}"
